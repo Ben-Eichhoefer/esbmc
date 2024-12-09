@@ -1203,52 +1203,52 @@ TEST_CASE("Add type annotation")
   SECTION("Get type from constant None")
   {
     std::istringstream input_data(R"json({
-    "_type": "Module",
-    "body": [
-        {
-            "_type": "AnnAssign",
-            "annotation": {
-                "_type": "Name",
-                "col_offset": 2,
-                "ctx": {
-                    "_type": "Load"
+        "_type": "Module",
+        "body": [
+            {
+                "_type": "AnnAssign",
+                "annotation": {
+                    "_type": "Name",
+                    "col_offset": 2,
+                    "ctx": {
+                        "_type": "Load"
+                    },
+                    "end_col_offset": 5,
+                    "end_lineno": 1,
+                    "id": "int",
+                    "lineno": 1
                 },
-                "end_col_offset": 5,
-                "end_lineno": 1,
-                "id": "int",
-                "lineno": 1
-            },
-            "col_offset": 0,
-            "end_col_offset": 12,
-            "end_lineno": 1,
-            "lineno": 1,
-            "simple": 1,
-            "target": {
-                "_type": "Name",
                 "col_offset": 0,
-                "ctx": {
-                    "_type": "Store"
-                },
-                "end_col_offset": 1,
-                "end_lineno": 1,
-                "id": "x",
-                "lineno": 1
-            },
-            "value": {
-                "_type": "Constant",
-                "col_offset": 8,
                 "end_col_offset": 12,
                 "end_lineno": 1,
-                "kind": null,
                 "lineno": 1,
-                "n": null,
-                "s": null,
-                "value": null
+                "simple": 1,
+                "target": {
+                    "_type": "Name",
+                    "col_offset": 0,
+                    "ctx": {
+                        "_type": "Store"
+                    },
+                    "end_col_offset": 1,
+                    "end_lineno": 1,
+                    "id": "x",
+                    "lineno": 1
+                },
+                "value": {
+                    "_type": "Constant",
+                    "col_offset": 8,
+                    "end_col_offset": 12,
+                    "end_lineno": 1,
+                    "kind": null,
+                    "lineno": 1,
+                    "n": null,
+                    "s": null,
+                    "value": null
+                }
             }
-        }
-    ],
-    "filename": "test.py"
-    "type_ignores": []
+        ],
+        "filename": "test.py",
+        "type_ignores": []
     })json");
 
     nlohmann::json input_json;
