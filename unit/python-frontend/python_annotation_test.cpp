@@ -1219,7 +1219,7 @@ TEST_CASE("Add type annotation")
                     "lineno": 1
                 },
                 "col_offset": 0,
-                "end_col_offset": 12,
+                "end_col_offset": 10,
                 "end_lineno": 1,
                 "lineno": 1,
                 "simple": 1,
@@ -1237,7 +1237,7 @@ TEST_CASE("Add type annotation")
                 "value": {
                     "_type": "Constant",
                     "col_offset": 8,
-                    "end_col_offset": 12,
+                    "end_col_offset": 10,
                     "end_lineno": 1,
                     "kind": null,
                     "lineno": 1,
