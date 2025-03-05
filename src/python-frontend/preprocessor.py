@@ -129,19 +129,27 @@ class Preprocessor(ast.NodeTransformer):
             else:
                 node.args[1] = ast.NameConstant(value=False)
 
-        # if not a function or preprocessor doesn't have function definition return
-        if not isinstance(node.func,ast.Name) or node.func.id not in self.functionParams:
+        # if not a function/method or preprocessor doesn't have function definition return
+        if isinstance(node.func,ast.Name) and node.func.id in self.functionParams:
+            functionName = node.func.id
+        elif isinstance(node.func,ast.Attribute) and node.func.attr in self.functionParams:
+            functionName = node.func.attr
+        else:
             self.generic_visit(node)
             return node
 
-        functionName = node.func.id
         expectedArgs = self.functionParams[functionName]
         keywords = {}
         # add keyword arguments to function call
         for i in node.keywords:
             if i.arg in keywords:
                 raise SyntaxError(f"Keyword argument repeated:{i.arg}",(self.module_name,i.lineno,i.col_offset,""))
-            keywords[i.arg] = i.value
+
+            # if method call in format className.attr(self=classInstance) convert to classInstance.attr()
+            if isinstance(node.func,ast.Attribute) and i.arg == expectedArgs[0]:
+                node.func.value = i.value
+            else:
+                keywords[i.arg] = i.value
 
         # return early if correct no. or too many parameters
         if len(node.args) >= len(expectedArgs):
@@ -154,7 +162,7 @@ class Preprocessor(ast.NodeTransformer):
                 node.args.append(keywords[expectedArgs[i]])
             elif (functionName, expectedArgs[i]) in self.functionDefaults:
                 node.args.append(ast.Constant(value = self.functionDefaults[(functionName, expectedArgs[i])]))
-            else:
+            elif not isinstance(node.func,ast.Attribute):
                 print(f"WARNING: {functionName}() missing required positional argument: '{expectedArgs[i]}'\n")
                 print(f"* file: {self.module_name}\n* line {node.lineno}\n* function: {functionName}\n* column: {node.col_offset} ")
                 break # breaking means not enough arguments, solver should reject
