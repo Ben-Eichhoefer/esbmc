@@ -7,6 +7,17 @@ class Preprocessor(ast.NodeTransformer):
         self.functionDefaults = {}
         self.functionParams = {}
         self.module_name = module_name # for errors
+
+    def generate_call_variable(self, node_name:str, argument:ast.arg, default_func:ast.Call):
+        target = ast.Name(id=f"_ESBMC_DEFAULT_{node_name}_{argument.arg}",ctx=ast.Store())
+        assign_node = ast.AnnAssign(
+            target=target,
+            annotation=argument.annotation,
+            value=default_func,
+            simple=1
+        )
+        return assign_node,target
+
     # for-range statements such as:
     #
     #   for x in range(1, 5, 1):
@@ -159,7 +170,6 @@ class Preprocessor(ast.NodeTransformer):
                 print(f"* file: {self.module_name}\n* line {node.lineno}\n* function: {functionName}\n* column: {node.col_offset} ")
                 break # breaking means not enough arguments, solver should reject
 
-
         self.generic_visit(node)
         return node # transformed node
 
@@ -171,10 +181,15 @@ class Preprocessor(ast.NodeTransformer):
         if len(node.args.defaults) < 1:
             self.generic_visit(node)
             return node
-
+        return_nodes = []
         # add defaults to dictionary with tuple key (function name, parameter name)
         for i in range(1,len(node.args.defaults)+1):
             if isinstance(node.args.defaults[-i],ast.Constant):
                 self.functionDefaults[(node.name, node.args.args[-i].arg)] = node.args.defaults[-i].value
+            if isinstance(node.args.defaults[-i],ast.Call):
+                assignment_node,target_var = self.generate_call_variable(node.name, node.args.args[-i], node.args.defaults[-i])
+                self.functionDefaults[(node.name,node.args.args[-i].arg)] = target_var
+                return_nodes.append(assignment_node)
         self.generic_visit(node)
-        return node
+        return_nodes.append(node)
+        return return_nodes
