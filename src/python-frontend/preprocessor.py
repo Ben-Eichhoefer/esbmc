@@ -164,7 +164,11 @@ class Preprocessor(ast.NodeTransformer):
             if expectedArgs[i] in keywords:
                 node.args.append(keywords[expectedArgs[i]])
             elif (functionName, expectedArgs[i]) in self.functionDefaults:
-                node.args.append(ast.Constant(value = self.functionDefaults[(functionName, expectedArgs[i])]))
+                default_val = self.functionDefaults[(functionName, expectedArgs[i])]
+                if isinstance(default_val,ast.Name):
+                    node.args.append(default_val)
+                else:
+                    node.args.append(ast.Constant(value = default_val))
             else:
                 print(f"WARNING: {functionName}() missing required positional argument: '{expectedArgs[i]}'\n")
                 print(f"* file: {self.module_name}\n* line {node.lineno}\n* function: {functionName}\n* column: {node.col_offset} ")
@@ -186,10 +190,12 @@ class Preprocessor(ast.NodeTransformer):
         for i in range(1,len(node.args.defaults)+1):
             if isinstance(node.args.defaults[-i],ast.Constant):
                 self.functionDefaults[(node.name, node.args.args[-i].arg)] = node.args.defaults[-i].value
-            if isinstance(node.args.defaults[-i],ast.Call):
+            elif isinstance(node.args.defaults[-i],ast.Call):
                 assignment_node,target_var = self.generate_call_variable(node.name, node.args.args[-i], node.args.defaults[-i])
                 self.functionDefaults[(node.name,node.args.args[-i].arg)] = target_var
                 return_nodes.append(assignment_node)
+            elif isinstance(node.args.defaults[-i],ast.Name):
+                self.functionDefaults[(node.name, node.args.args[-i].arg)] = node.args.defaults[-i]
         self.generic_visit(node)
         return_nodes.append(node)
         return return_nodes
